@@ -1,5 +1,4 @@
 node_modules/
-**/MyData/
 master.json
 */.DS_Store
 .DS_Store

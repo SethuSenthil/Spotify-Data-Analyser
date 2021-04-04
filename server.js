@@ -8,6 +8,10 @@
 //keep track of months
 //Master global arr with all songs and all their stats, play counts & play time
 
+//TODO: Fix Artist Indexing
+//TODO: Add support for multiple data folders (check overlapping date and ignore)
+//TODO: Make UI Collapsable
+
 const fs = require('fs');
 
 const exportDates = {}

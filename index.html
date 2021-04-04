@@ -31,12 +31,24 @@
     .fSHow {
         display: block !important;
     }
+
+    table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
 </style>
 
 <body class="gfont">
+    <center><h1 id="title">Spotify Data Analyser</h1></center>
     <div id="home" class="view">
         <h1>Life Time Analytics:</h1>
-        <p>Play Time:</p>
+        <p>🕒 Play Time:</p>
         <p>Top Songs:</p>
         <p>Top Artists:</p>
 
@@ -48,7 +60,7 @@
 
     <div id="months" class="view">
         <h1>Yearly Analytics:</h1>
-        <p>Play Time:</p>
+        <p>🕒 Play Time:</p>
         <p>Top Songs:</p>
         <p>Top Artists:</p>
 
@@ -60,11 +72,21 @@
 
     <div id="days" class="view">
         <h1>Monthly Analytics:</h1>
-        <p>Play Time: <span id="playtime"></span></p>
-        <p>Top Songs:</p>
-        <div id="topsongs">
-            <input type="button" value="2020" class="template">
-        </div>
+        <p>🕒 Play Time: <span id="playtime"></span></p>
+
+        <table id="topsongs">
+            <tr>
+                <th>Song Name</th>
+                <th>Artist</th>
+                <th>Play Count</th>
+              </tr>
+
+            <tr class="template">
+              <td>SONG_NAME</td>
+              <td>SONG_ARTIST</td>
+              <td>PLAY_COUNT</td>
+            </tr>
+        </table>
         <p>Top Artists:</p>
 
         <h1>Days:</h1>
@@ -76,9 +98,26 @@
 </body>
 
 <script>
+    const title = document.querySelector('#title');
+    const monthMap = {
+                [1]: 'January',
+                [2]: 'February',
+                [3]: 'March',
+                [4]: 'April',
+                [5]: 'May',
+                [6]: 'June',
+                [7]: 'July',
+                [8]: 'August',
+                [9]: 'September',
+                [10]: 'October',
+                [11]: 'November',
+                [12]: 'December',
+            }
+
     let data = ''
     let generated = {
-        home: false
+        home: false,
+        months: false
     }
 
     function msToTime(duration) {
@@ -91,7 +130,7 @@
   minutes = (minutes < 10) ? "0" + minutes : minutes;
   seconds = (seconds < 10) ? "0" + seconds : seconds;
 
-  return hours + "hours " + minutes + "minutes " + seconds + "seconds"
+  return hours + " hours " + minutes + " minutes " + seconds + " seconds"
 }
 
 
@@ -137,34 +176,22 @@
             }
 
         } else {
-            if (!generated.home)
-                window.location.href = window.location.href.split('#')[0]
+            if (!hash || !generated.home){
+                //();
+            }
 
             hash = JSON.parse(decodeURI(hash))
             console.log(hash)
 
         if(!hash.month){
+            title.innerText =  `${hash.year}`
 
             let view = document.querySelector('#months')
             view.classList.remove('hide')
 
-            const monthMap = {
-                [1]: 'January',
-                [2]: 'February',
-                [3]: 'March',
-                [4]: 'April',
-                [5]: 'May',
-                [6]: 'June',
-                [7]: 'July',
-                [8]: 'August',
-                [9]: 'September',
-                [10]: 'October',
-                [11]: 'November',
-                [12]: 'December',
-            }
-
             let template = view.querySelector('.template')
 
+            if(!generated.months){
             for (let i = 1; i <= 12; i++) {
                 let newBtn = template.cloneNode(true)
                 newBtn.value = monthMap[i]
@@ -175,17 +202,16 @@
                 })
                 view.querySelector('#monthDiaply').appendChild(newBtn);
 
-
             }
+            generated.months = true
         }
+    }
     }
 
     if(!hash.day && hash.month){
+        title.innerText =  `${monthMap[hash.month]} ${hash.year}`
         let view = document.querySelector('#days')
             view.classList.remove('hide')
-
-
-
 
     let days = []
 
@@ -196,8 +222,10 @@
     days.sort()
     console.log(days)
 
+    let template = view.querySelector('#dayDisplay').querySelector('.template')
+    view.querySelector('#dayDisplay').outerHTML = `<div id="dayDisplay">${template.outerHTML}</div>`
+
     days.forEach(day => {
-        let template = view.querySelector('#dayDisplay').querySelector('.template')
         let newBtn = template.cloneNode(true)
     newBtn.value = day
     newBtn.classList.remove('template')
@@ -210,15 +238,17 @@
 
 });
 
+template = view.querySelector('#topsongs').querySelector('.template')
+//view.querySelector('#topsongs').outerHTML = `<tr id="topsongs">${template.outerHTML}</tr>`*/
 
 data.years[hash.year].months[hash.month].tally.slice(0, 20).forEach(song => {
-    let template = view.querySelector('#topsongs').querySelector('.template')
-        let newBtn = template.cloneNode(true)
-    newBtn.value = data.trackIndexes[song.nameTag][1]
+    //delete prev render
+    let newBtn = template.cloneNode(true)
+    newBtn.innerHTML = newBtn.innerHTML.replace('SONG_NAME', data.trackIndexes[song.nameTag][1])
+    newBtn.innerHTML = newBtn.innerHTML.replace('PLAY_COUNT', song.count)
+    newBtn.innerHTML = newBtn.innerHTML.replace('SONG_ARTIST', data.trackIndexes[song.nameTag][0])
     newBtn.classList.remove('template')
-
     view.querySelector('#topsongs').appendChild(newBtn);
-
 });
 
 
