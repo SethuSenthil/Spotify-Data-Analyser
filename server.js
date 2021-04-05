@@ -8,9 +8,9 @@
 //keep track of months
 //Master global arr with all songs and all their stats, play counts & play time
 
-//TODO: Fix Artist Indexing
 //TODO: Add support for multiple data folders (check overlapping date and ignore)
 //TODO: Make UI Collapsable
+//TODO: Arrange Artist Tally
 
 const fs = require('fs');
 
@@ -125,7 +125,6 @@ const stichDates = async () => {
                     //check if year entry does not exist to make one
                     console.log(`Year ${getYear()} did not exist, so it was created`)
                     global.years[getYear()] = {
-                        overallListenTime: 0,
                         months: {}
                     }
 
@@ -142,23 +141,6 @@ const stichDates = async () => {
 
                 }
 
-                const idTag = song.trackName + '-' + song.artistName
-
-                let trackIndexNum = 0
-
-                let nameAndArtist = [song.artistName, song.trackName]
-
-                if (!global.revTrackIndexes[idTag]) {
-                    //check if track has an existing reference number, if not make one
-                    global.revTrackIndexes[idTag] = indexID
-                    global.trackIndexes[indexID] = nameAndArtist
-                    trackIndexNum = indexID
-
-                    indexID++
-                } else {
-                    trackIndexNum = global.revTrackIndexes[idTag]
-                }
-
                 let artistIndexNum = 0
 
                 if (!global.revArtistIndexes[song.artistName]) {
@@ -169,7 +151,24 @@ const stichDates = async () => {
 
                     indexArtistID++
                 } else {
-                    artistIndexNum = global.revTrackIndexes[song.artistName]
+                    artistIndexNum = global.revArtistIndexes[song.artistName]
+                }
+
+                const idTag = song.trackName + '-' + song.artistName
+
+                let trackIndexNum = 0
+
+                let nameAndArtist = [artistIndexNum, song.trackName]
+
+                if (!global.revTrackIndexes[idTag]) {
+                    //check if track has an existing reference number, if not make one
+                    global.revTrackIndexes[idTag] = indexID
+                    global.trackIndexes[indexID] = nameAndArtist
+                    trackIndexNum = indexID
+
+                    indexID++
+                } else {
+                    trackIndexNum = global.revTrackIndexes[idTag]
                 }
 
                 if (!global.years[getYear()].months[getMonth()].history[getDay()]){
@@ -202,10 +201,6 @@ const stichDates = async () => {
 
                 //month overall
                 global.years[getYear()].months[getMonth()].overallListenTime += song.msPlayed
-
-                //year overall
-                global.years[getYear()].overallListenTime += song.msPlayed
-
             });
             //console.log(global.years[2021])
             backCount--

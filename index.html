@@ -8,16 +8,22 @@
     <link rel="stylesheet" type="text/css" href="https://sethusenthil.com/Product-Sans/api/font.css">
 </head>
 <style>
+    body{
+        background: #191414;
+        color: white;
+        margin: 25
+    }
     input[type=button],
     input[type=submit],
     input[type=reset] {
-        background-color: #4CAF50;
+        background-color: #1DB954;
         border: none;
         color: white;
         padding: 16px 32px;
         text-decoration: none;
         margin: 4px 2px;
         cursor: pointer;
+        border-radius: 10px
     }
 
     .template {
@@ -33,22 +39,25 @@
     }
 
     table {
-  border-collapse: collapse;
-  width: 100%;
-}
+        border-collapse: collapse;
+        width: 100%;
+    }
 
-td, th {
-  border: 1px solid #dddddd;
-  text-align: left;
-  padding: 8px;
-}
+    td,
+    th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
 </style>
 
 <body class="gfont">
-    <center><h1 id="title">Spotify Data Analyser</h1></center>
+    <center>
+        <h1 id="title">Spotify Data Analyser</h1>
+    </center>
     <div id="home" class="view">
         <h1>Life Time Analytics:</h1>
-        <p>🕒 Play Time:</p>
+        <p>🕒 Play Time: <span id="playtime"></span></p>
         <p>Top Songs:</p>
         <p>Top Artists:</p>
 
@@ -60,7 +69,7 @@ td, th {
 
     <div id="months" class="view">
         <h1>Yearly Analytics:</h1>
-        <p>🕒 Play Time:</p>
+        <p>🕒 Play Time: <span id="playtime"></span></p>
         <p>Top Songs:</p>
         <p>Top Artists:</p>
 
@@ -74,20 +83,33 @@ td, th {
         <h1>Monthly Analytics:</h1>
         <p>🕒 Play Time: <span id="playtime"></span></p>
 
+       <center> <h3>Top Songs</h3></center>
         <table id="topsongs">
             <tr>
                 <th>Song Name</th>
                 <th>Artist</th>
                 <th>Play Count</th>
-              </tr>
+            </tr>
 
             <tr class="template">
-              <td>SONG_NAME</td>
-              <td>SONG_ARTIST</td>
-              <td>PLAY_COUNT</td>
+                <td>SONG_NAME</td>
+                <td>SONG_ARTIST</td>
+                <td>PLAY_COUNT</td>
             </tr>
         </table>
-        <p>Top Artists:</p>
+
+        <center> <h3>Top Artists</h3></center>
+        <table id="topartists">
+            <tr>
+                <th>Artist Name</th>
+                <th>Play Count</th>
+            </tr>
+
+            <tr class="template">
+                <td>ARTIST_NAME</td>
+                <td>PLAY_COUNT</td>
+            </tr>
+        </table>
 
         <h1>Days:</h1>
         <div id="dayDisplay">
@@ -100,19 +122,19 @@ td, th {
 <script>
     const title = document.querySelector('#title');
     const monthMap = {
-                [1]: 'January',
-                [2]: 'February',
-                [3]: 'March',
-                [4]: 'April',
-                [5]: 'May',
-                [6]: 'June',
-                [7]: 'July',
-                [8]: 'August',
-                [9]: 'September',
-                [10]: 'October',
-                [11]: 'November',
-                [12]: 'December',
-            }
+        [1]: 'January',
+        [2]: 'February',
+        [3]: 'March',
+        [4]: 'April',
+        [5]: 'May',
+        [6]: 'June',
+        [7]: 'July',
+        [8]: 'August',
+        [9]: 'September',
+        [10]: 'October',
+        [11]: 'November',
+        [12]: 'December',
+    }
 
     let data = ''
     let generated = {
@@ -121,17 +143,17 @@ td, th {
     }
 
     function msToTime(duration) {
-  var milliseconds = parseInt((duration % 1000) / 100),
-    seconds = Math.floor((duration / 1000) % 60),
-    minutes = Math.floor((duration / (1000 * 60)) % 60),
-    hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+        var milliseconds = parseInt((duration % 1000) / 100),
+            seconds = Math.floor((duration / 1000) % 60),
+            minutes = Math.floor((duration / (1000 * 60)) % 60),
+            hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
 
-  hours = (hours < 10) ? "0" + hours : hours;
-  minutes = (minutes < 10) ? "0" + minutes : minutes;
-  seconds = (seconds < 10) ? "0" + seconds : seconds;
+        hours = (hours < 10) ? "0" + hours : hours;
+        minutes = (minutes < 10) ? "0" + minutes : minutes;
+        seconds = (seconds < 10) ? "0" + seconds : seconds;
 
-  return hours + " hours " + minutes + " minutes " + seconds + " seconds"
-}
+        return hours + " hours " + minutes + " minutes " + seconds + " seconds"
+    }
 
 
     fetch('./master.json')
@@ -176,87 +198,98 @@ td, th {
             }
 
         } else {
-            if (!hash || !generated.home){
+            if (!hash || !generated.home) {
                 //();
             }
 
             hash = JSON.parse(decodeURI(hash))
             console.log(hash)
 
-        if(!hash.month){
-            title.innerText =  `${hash.year}`
+            if (!hash.month) {
+                title.innerText = `${hash.year}`
 
-            let view = document.querySelector('#months')
+                let view = document.querySelector('#months')
+                view.classList.remove('hide')
+
+                let template = view.querySelector('.template')
+
+                if (!generated.months) {
+                    for (let i = 1; i <= 12; i++) {
+                        let newBtn = template.cloneNode(true)
+                        newBtn.value = monthMap[i]
+                        newBtn.classList.remove('template')
+                        newBtn.addEventListener('click', () => {
+                            hash.month = i
+                            window.location.hash = JSON.stringify(hash)
+                        })
+                        view.querySelector('#monthDiaply').appendChild(newBtn);
+
+                    }
+                    view.querySelector('#playtime').innerText = msToTime(data.years[hash.year].overallListenTime)
+                    generated.months = true
+                }
+            }
+        }
+
+        if (!hash.day && hash.month) {
+            title.innerText = `${monthMap[hash.month]} ${hash.year}`
+            let view = document.querySelector('#days')
             view.classList.remove('hide')
 
-            let template = view.querySelector('.template')
+            let days = []
 
-            if(!generated.months){
-            for (let i = 1; i <= 12; i++) {
+            for (const [day, dayData] of Object.entries(data.years[hash.year].months[hash.month].history)) {
+                days.push(day)
+            }
+
+            days.sort()
+            console.log(days)
+
+            let template = view.querySelector('#dayDisplay').querySelector('.template')
+            view.querySelector('#dayDisplay').outerHTML = `<div id="dayDisplay">${template.outerHTML}</div>`
+
+            days.forEach(day => {
                 let newBtn = template.cloneNode(true)
-                newBtn.value = monthMap[i]
+                newBtn.value = day
                 newBtn.classList.remove('template')
                 newBtn.addEventListener('click', () => {
-                    hash.month = i
+                    hash.day = day
                     window.location.hash = JSON.stringify(hash)
-                })
-                view.querySelector('#monthDiaply').appendChild(newBtn);
+                });
 
-            }
-            generated.months = true
+                view.querySelector('#dayDisplay').appendChild(newBtn);
+
+            });
+
+            template = view.querySelector('#topsongs').querySelector('.template')
+            view.querySelector('#topsongs').outerHTML = ` <table id="topsongs">
+            <tr>
+                <th>Song Name</th>
+                <th>Artist</th>
+                <th>Play Count</th>
+              </tr>
+${template.outerHTML}
+        </table>`
+
+            data.years[hash.year].months[hash.month].tally.slice(0, 20).forEach(song => {
+                //delete prev render
+                let newBtn = template.cloneNode(true)
+                newBtn.innerHTML = newBtn.innerHTML.replace('SONG_NAME', data.trackIndexes[song.nameTag][1])
+                newBtn.innerHTML = newBtn.innerHTML.replace('PLAY_COUNT', song.count)
+                newBtn.innerHTML = newBtn.innerHTML.replace('SONG_ARTIST', data.artistIndexes[data
+                    .trackIndexes[song.nameTag][0]])
+                newBtn.classList.remove('template')
+                view.querySelector('#topsongs').appendChild(newBtn);
+            });
+
+
+            view.querySelector('#playtime').innerText = msToTime(data.years[hash.year].months[hash.month]
+                .overallListenTime)
+
+
         }
-    }
-    }
 
-    if(!hash.day && hash.month){
-        title.innerText =  `${monthMap[hash.month]} ${hash.year}`
-        let view = document.querySelector('#days')
-            view.classList.remove('hide')
-
-    let days = []
-
-    for (const [day, dayData] of Object.entries(data.years[hash.year].months[hash.month].history)) {
-      days.push(day)
-    }
-
-    days.sort()
-    console.log(days)
-
-    let template = view.querySelector('#dayDisplay').querySelector('.template')
-    view.querySelector('#dayDisplay').outerHTML = `<div id="dayDisplay">${template.outerHTML}</div>`
-
-    days.forEach(day => {
-        let newBtn = template.cloneNode(true)
-    newBtn.value = day
-    newBtn.classList.remove('template')
-    newBtn.addEventListener('click', () => {
-        hash.day = day
-        window.location.hash = JSON.stringify(hash)
-    });
-
-    view.querySelector('#dayDisplay').appendChild(newBtn);
-
-});
-
-template = view.querySelector('#topsongs').querySelector('.template')
-//view.querySelector('#topsongs').outerHTML = `<tr id="topsongs">${template.outerHTML}</tr>`*/
-
-data.years[hash.year].months[hash.month].tally.slice(0, 20).forEach(song => {
-    //delete prev render
-    let newBtn = template.cloneNode(true)
-    newBtn.innerHTML = newBtn.innerHTML.replace('SONG_NAME', data.trackIndexes[song.nameTag][1])
-    newBtn.innerHTML = newBtn.innerHTML.replace('PLAY_COUNT', song.count)
-    newBtn.innerHTML = newBtn.innerHTML.replace('SONG_ARTIST', data.trackIndexes[song.nameTag][0])
-    newBtn.classList.remove('template')
-    view.querySelector('#topsongs').appendChild(newBtn);
-});
-
-
-view.querySelector('#playtime').innerText = msToTime(data.years[hash.year].months[hash.month].overallListenTime)
-
-
-    }
-}
+        }
 </script>
 
 </html>
